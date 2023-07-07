@@ -1,6 +1,8 @@
 package org.hye.util;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.zeroturnaround.zip.ZipUtil;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -105,6 +107,18 @@ public class EncryptionFileUtil {
         encrypt(data, encryptedFilePath, fileName, password, generatePassword);
     }
 
+    public static void doEncryptFolder(String dirPath, String encryptedFilePath, String password, boolean generatePassword) throws Exception {
+        File file = new File(dirPath);
+        String tempPath = "tmp/" + file.getName() + ".zip";
+        File tempFileFolder = new File("tmp/");
+        if (!tempFileFolder.exists())
+            tempFileFolder.mkdir();
+        ZipUtil.pack(file, new File(tempPath));
+        doEncrypt(tempPath, encryptedFilePath, password, generatePassword);
+        File fileTemp = new File(tempPath);
+        fileTemp.delete();
+    }
+
     private static byte[] decrypt(byte[] decode, String fileName, String password, boolean givePasswordString, String passwordPath, boolean writeToFile, String writePath) throws Exception {
         if (!givePasswordString)
         {
@@ -147,16 +161,21 @@ public class EncryptionFileUtil {
     public static byte[] doDecrypt(String encryptedFilePath, String password, boolean givePasswordString, String passwordPath, boolean writeToFile, String writePath) throws Exception {
         File file = new File(encryptedFilePath);
         String fileName = file.getName();
-        String[] originalNames = fileName.split("\\.");
-        String originalName = "";
-        for (int i = 0; i < originalNames.length - 1; i ++) {
-            if (i == originalNames.length - 2) {
-                originalName += ".";
-            }
-            originalName += originalNames[i];
-        }
+        String originalName = FilenameUtils.removeExtension(fileName);
         byte[] data = readFileToByteArray(file);
         return decrypt(data, originalName, password, givePasswordString, passwordPath, writeToFile, writePath);
+    }
+
+    public static void doDecryptFolder(String encryptedFilePath, String password, boolean givePasswordString, String passwordPath, boolean writeToFile, String writePath) throws Exception {
+        File file = new File(encryptedFilePath);
+        String fileName = file.getName();
+        String originalName = FilenameUtils.removeExtension(fileName);
+
+        String tempName = "tmp/" + fileName;
+        doDecrypt(encryptedFilePath, password, givePasswordString, passwordPath, writeToFile, tempName);
+        File tempFile = new File(tempName + System.getProperty("file.separator") + originalName);
+        ZipUtil.unpack(tempFile, new File(writePath + System.getProperty("file.separator") + FilenameUtils.removeExtension(originalName)));
+        tempFile.delete();
     }
 
     public static void main(String[] args) throws Exception {
@@ -171,5 +190,13 @@ public class EncryptionFileUtil {
         // doEncrypt(fileLoc, secretStoreLoc, password, true);
         // doDecrypt(encryptedFileLoc, password, true, null, true, writeToLoc);
         // doDecrypt(encryptedFileLoc, null, false, encryptedPassLoc, true, writeToLoc);
+
+        String dirLoc = "F:\\Articles";
+        String encryptedDirFileLoc = "D:\\OneDrives\\OneDrive\\Desktop\\Test\\Articles.zip.runic";
+        String encryptedDirPassLoc = "D:\\OneDrives\\OneDrive\\Desktop\\Test\\Articles.zip.runic.pass";
+
+        // doEncryptFolder(dirLoc, secretStoreLoc, password, true);
+        // doDecryptFolder(encryptedDirFileLoc, password, true, null, true, writeToLoc);
+        // doDecryptFolder(encryptedDirFileLoc, null, false, encryptedDirPassLoc, true, writeToLoc);
     }
 }

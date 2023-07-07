@@ -1,6 +1,7 @@
 package org.hye.util;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -164,14 +165,7 @@ public class EncryptionTextUtil {
         }
 
         File secretFile = new File(secretPath);
-        String[] originalNames = secretFile.getName().split("\\.");
-        String originalName = "";
-        for (int i = 0; i < originalNames.length - 1; i ++) {
-            if (i == originalNames.length - 2) {
-                originalName += ".";
-            }
-            originalName += originalNames[i];
-        }
+        String originalName = FilenameUtils.removeExtension(secretFile.getName());
 
         byte[] secretFileBytes = readFileToByteArray(secretFile);
         byte[] saltBytes = Arrays.copyOfRange(secretFileBytes, 0, 16);

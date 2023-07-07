@@ -1,5 +1,7 @@
 package org.hye.test;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 import java.util.Arrays;
 
@@ -13,5 +15,6 @@ public class TestEverything {
         File file = new File("G:\\Programming\\Programming.rar");
         String[] names = file.getName().split("\\.");
         System.out.println(names[names.length - 1]);
+        System.out.println(FilenameUtils.removeExtension("Programming.tar.gz"));
     }
 }
