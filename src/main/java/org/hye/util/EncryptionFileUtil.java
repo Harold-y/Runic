@@ -4,7 +4,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.zeroturnaround.zip.ZipUtil;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -15,16 +14,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 
@@ -178,6 +173,19 @@ public class EncryptionFileUtil {
         tempFile.delete();
     }
 
+    public static void changePassword(String encryptedFilePath, boolean giveOldPasswordString, String oldPassword, String oldPasswordPath,
+                                      boolean generatePassword, String newPassword) throws Exception {
+        File file = new File(encryptedFilePath);
+        String fileName = file.getName();
+        String path = FilenameUtils.getFullPath(file.getAbsolutePath());
+
+        String originalName = FilenameUtils.removeExtension(fileName);
+        byte[] data = readFileToByteArray(file);
+
+        byte[] decrypted = decrypt(data, originalName, oldPassword, giveOldPasswordString, oldPasswordPath, false, null);
+        encrypt(decrypted, path, originalName, newPassword, generatePassword);
+    }
+
     public static void main(String[] args) throws Exception {
         String fileLoc = "D:\\OneDrives\\OneDrive - UW-Madison\\素材&图片\\Picture1.png";
         String secretStoreLoc = "D:\\OneDrives\\OneDrive\\Desktop\\Test";
@@ -185,6 +193,7 @@ public class EncryptionFileUtil {
         String encryptedPassLoc = "D:\\OneDrives\\OneDrive\\Desktop\\Test\\Picture1.png.runic.pass";
         String writeToLoc = "D:\\OneDrives\\OneDrive\\Desktop\\Test";
         String password = "this is a password";
+        String password2 = "Hello World!";
 
 
         // doEncrypt(fileLoc, secretStoreLoc, password, true);
@@ -192,11 +201,14 @@ public class EncryptionFileUtil {
         // doDecrypt(encryptedFileLoc, null, false, encryptedPassLoc, true, writeToLoc);
 
         String dirLoc = "F:\\Articles";
-        String encryptedDirFileLoc = "D:\\OneDrives\\OneDrive\\Desktop\\Test\\Articles.zip.runic";
-        String encryptedDirPassLoc = "D:\\OneDrives\\OneDrive\\Desktop\\Test\\Articles.zip.runic.pass";
+        String secretStoreLoc2 = "F:\\Test";
+        String encryptedDirFileLoc = "F:\\Test\\Articles.zip.runic";
+        String encryptedDirPassLoc = "F:\\Test\\Articles.zip.runic.pass";
+        String writeToLoc2 = "F:\\Test";
 
-        // doEncryptFolder(dirLoc, secretStoreLoc, password, true);
-        // doDecryptFolder(encryptedDirFileLoc, password, true, null, true, writeToLoc);
-        // doDecryptFolder(encryptedDirFileLoc, null, false, encryptedDirPassLoc, true, writeToLoc);
+        // doEncryptFolder(dirLoc, secretStoreLoc2, password, true);
+        // changePassword(encryptedDirFileLoc, true, password, null, true, password2);
+        // doDecryptFolder(encryptedDirFileLoc, password2, true, null, true, writeToLoc2);
+        // doDecryptFolder(encryptedDirFileLoc, null, false, encryptedDirPassLoc, true, writeToLoc2);
     }
 }
