@@ -206,9 +206,9 @@ public class EncryptionFileUtil {
         String encryptedDirPassLoc = "F:\\Test\\Articles.zip.runic.pass";
         String writeToLoc2 = "F:\\Test";
 
-        // doEncryptFolder(dirLoc, secretStoreLoc2, password, true);
-        // changePassword(encryptedDirFileLoc, true, password, null, true, password2);
-        // doDecryptFolder(encryptedDirFileLoc, password2, true, null, true, writeToLoc2);
+        doEncryptFolder(dirLoc, secretStoreLoc2, password, true);
+        changePassword(encryptedDirFileLoc, true, password, null, true, password2);
+        doDecryptFolder(encryptedDirFileLoc, password2, true, null, true, writeToLoc2);
         // doDecryptFolder(encryptedDirFileLoc, null, false, encryptedDirPassLoc, true, writeToLoc2);
     }
 }
