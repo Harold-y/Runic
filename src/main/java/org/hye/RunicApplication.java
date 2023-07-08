@@ -6,6 +6,8 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan("org.hye.util")
+@ComponentScan("org.hye.dao")
+@ComponentScan("org.hye.controller")
 public class RunicApplication {
 
     public static void main(String[] args) {
