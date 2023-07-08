@@ -3,7 +3,7 @@ package org.hye.service.impl;
 import com.alibaba.fastjson2.util.UUIDUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 import org.hye.dao.CredentialMapper;
 import org.hye.dao.SettingMapper;
 import org.hye.entity.Admin;
@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.hye.util.EncryptionPassUtil;
 import org.hye.util.Result;
 import org.hye.util.UUIDUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,14 +71,16 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
 
     public Result<Admin> login(String email, String password) {
         try {
-            String encryptedPass = EncryptionPassUtil.doEncrypt(password);
+
             QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("admin_email", email);
             Admin admin = adminMapper.selectOne(queryWrapper);
             if (admin == null)
             {
                 return new Result<>("Email incorrect.");
-            }else if (!admin.getAdminPassword().equals(encryptedPass)) {
+            }
+            String decryptedPass = EncryptionPassUtil.doDecrypt(admin.getAdminPassword());
+            if (!decryptedPass.equals(password)) {
                 return new Result<>("Password incorrect.");
             }
 
@@ -108,12 +111,18 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             admin1.setAdminUuid(uuid);
 
             adminMapper.insert(admin1);
+
+            admin = adminMapper.selectOne(queryWrapper);
+            int adminId = admin.getAdminId();
+            admin1.setAdminId(adminId);
             String accessKey = credHelper(admin1);
             admin1.setAdminPassword(accessKey);
 
+            /*
             File file = new File(uploadFolder + System.getProperty("file.separator") + uuid);
             if (!file.exists())
                 file.mkdir();
+             */
             return new Result<>(admin1, "Success.");
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -125,7 +134,13 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     {
         QueryWrapper<Credential> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("cred_access_key", accessKey);
-        return new Result<>(credentialMapper.delete(queryWrapper), "logout");
+        Credential credential = credentialMapper.selectOne(queryWrapper);
+        if (credential == null || credential.getCredAdminId() == null)
+            return new Result<>("error: wrong credential");
+        int adminId = credential.getCredAdminId();
+        QueryWrapper<Credential> queryWrapper2 = new QueryWrapper<>();
+        queryWrapper2.eq("cred_admin_id", adminId);
+        return new Result<>(credentialMapper.delete(queryWrapper2), "logout");
     }
 
     public Result<Admin> getInfo(Integer adminId)
@@ -170,8 +185,11 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         }
         QueryWrapper<Admin> queryWrapper2 = new QueryWrapper<>();
         queryWrapper2.eq("admin_id", credential.getCredAdminId());
+        Admin admin = adminMapper.selectOne(queryWrapper2);
+        if (admin != null)
+            admin.setAdminPassword("");
 
-        return new Result<>(adminMapper.selectOne(queryWrapper2), "queried.");
+        return new Result<>(admin, "queried.");
     }
 
     public Result<Integer> editInfo(String accessKey, Admin admin)
@@ -220,7 +238,10 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     }
     public byte[] getAvatar(Integer userId)
     {
-        String uuid = adminMapper.selectById(userId).getAdminUuid();
+        Admin selected = adminMapper.selectById(userId);
+        if (selected == null)
+            return new byte[]{};
+        String uuid = selected.getAdminUuid();
         return getAvatarHelper(uuid);
     }
 
@@ -249,7 +270,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         }
 
         String uuid = admin1.getAdminUuid();
-        String folder = uploadFolder + System.getProperty("file.separator") + uuid;
+        String folder = uploadFolder + System.getProperty("file.separator") + "userImg";
         File folderDir = new File(folder);
         if (!folderDir.exists())
             folderDir.mkdir();
@@ -274,16 +295,20 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     {
         int retStatus;
         try {
-            String encryptedOldPass = EncryptionPassUtil.doEncrypt(oldPassword);
             QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("admin_id", adminId);
             Admin admin = adminMapper.selectOne(queryWrapper);
-            if (admin == null || !admin.getAdminPassword().equals(encryptedOldPass))
+            if (admin == null)
             {
-                return new Result<>("Incorrect old password.");
+                return new Result<>("error: admin error.");
+            }
+            String decryptedOldPassword = EncryptionPassUtil.doDecrypt(admin.getAdminPassword());
+            if (!decryptedOldPassword.equals(oldPassword))
+            {
+                return new Result<>("error: incorrect old password.");
             }
         } catch (Exception e) {
-            return new Result<>("Encryption error.");
+            return new Result<>("error: encryption error.");
         }
 
         try {

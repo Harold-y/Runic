@@ -1,11 +1,14 @@
 package org.hye.controller;
 
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpSession;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.hye.entity.Admin;
 import org.hye.service.IAdminService;
 import org.hye.util.Result;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -36,9 +39,9 @@ public class AdminController {
         return adminService.signup(email, name, password);
     }
     @PostMapping("/logout")
-    public Result<Integer> logout(HttpSession session)
+    public Result<Integer> logout(HttpServletRequest request)
     {
-        String accessKey = (String) session.getAttribute("accessKey");
+        String accessKey = request.getHeader("accessKey");
         return adminService.logout(accessKey);
     }
     @GetMapping("/getInfoId")
@@ -47,38 +50,38 @@ public class AdminController {
         return adminService.getInfo(adminId);
     }
     @GetMapping("/getInfo")
-    public Result<Admin> getInfo(HttpSession session)
+    public Result<Admin> getInfo(HttpServletRequest request)
     {
-        String accessKey = (String) session.getAttribute("accessKey");
+        String accessKey = request.getHeader("accessKey");
         return adminService.getInfo(accessKey);
     }
     @PostMapping("/editInfo")
-    public Result<Integer> editInfo(HttpSession session, @RequestBody Admin admin)
+    public Result<Integer> editInfo(HttpServletRequest request, @RequestBody Admin admin)
     {
-        String accessKey = (String) session.getAttribute("accessKey");
+        String accessKey = request.getHeader("accessKey");
         return adminService.editInfo(accessKey, admin);
     }
-    @GetMapping("/getAvatarId")
+    @GetMapping(value = "/getAvatarId", produces = MediaType.IMAGE_JPEG_VALUE)
     public byte[] getAvatar(Integer userId)
     {
         return adminService.getAvatar(userId);
     }
-    @GetMapping("/getAvatar")
-    public byte[] getAvatar(HttpSession session)
+    @GetMapping(value = "/getAvatar", produces = MediaType.IMAGE_JPEG_VALUE)
+    public byte[] getAvatar(HttpServletRequest request)
     {
-        String accessKey = (String) session.getAttribute("accessKey");
+        String accessKey = request.getHeader("accessKey");
         return adminService.getAvatar(accessKey);
     }
     @PostMapping("/updateAvatar")
-    public Result<Integer> updateAvatar(HttpSession session, MultipartFile img)
+    public Result<Integer> updateAvatar(HttpServletRequest request, MultipartFile img)
     {
-        String accessKey = (String) session.getAttribute("accessKey");
+        String accessKey = request.getHeader("accessKey");
         return adminService.updateAvatar(accessKey, img);
     }
     @PostMapping("/changePassword")
-    public Result<Integer> changePassword(HttpSession session, String oldPassword, String newPassword)
+    public Result<Integer> changePassword(HttpServletRequest request, String oldPassword, String newPassword)
     {
-        String accessKey = (String) session.getAttribute("accessKey");
+        String accessKey = request.getHeader("accessKey");
         return adminService.changePassword(accessKey, oldPassword, newPassword);
     }
 }
