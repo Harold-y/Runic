@@ -1,5 +1,7 @@
 package org.hye.util;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
@@ -26,6 +28,16 @@ public class EncryptionPassUtil {
     private static final int IV_LENGTH_BYTE = 12;
     private static final int SALT_LENGTH_BYTE = 16;
     private static final Charset UTF_8 = StandardCharsets.UTF_8;
+    @Value("${constant.passkey}")
+    private static String passKey = "Ontuc2_-19fcCC@-3C72+2CKL.";
+
+    public static String doEncrypt(String password) throws Exception {
+        return encrypt(password.getBytes(UTF_8), passKey);
+    }
+
+    public static String doDecrypt(String encryptedPassword) throws Exception {
+        return decrypt(encryptedPassword, passKey);
+    }
 
     public static byte[] getRandomNonce(int numBytes) {
         byte[] nonce = new byte[numBytes];
