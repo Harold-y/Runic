@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * <p>
  *  前端控制器
@@ -83,6 +85,12 @@ public class AdminController {
     {
         String accessKey = request.getHeader("accessKey");
         return adminService.changePassword(accessKey, oldPassword, newPassword);
+    }
+    @GetMapping("/getPeople")
+    public Result<List<Admin>> getPeople(HttpServletRequest request)
+    {
+        String accessKey = request.getHeader("accessKey");
+        return adminService.getPeople(accessKey);
     }
 }
 

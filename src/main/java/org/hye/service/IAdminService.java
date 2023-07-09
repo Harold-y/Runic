@@ -1,9 +1,13 @@
 package org.hye.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.hye.entity.Admin;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.hye.entity.Credential;
 import org.hye.util.Result;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * <p>
@@ -25,4 +29,6 @@ public interface IAdminService extends IService<Admin> {
     Result<Integer> updateAvatar(String accessKey, MultipartFile img);
     Result<Integer> changePassword(Integer adminId, String oldPassword, String newPassword);
     Result<Integer> changePassword(String accessKey, String oldPassword, String newPassword);
+    Result<List<Admin>> getPeople(String accessKey);
+    Result<Admin> getAdminHelper(QueryWrapper<Credential> queryWrapper);
 }

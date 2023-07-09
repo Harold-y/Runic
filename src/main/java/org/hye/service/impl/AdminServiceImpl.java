@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * <p>
@@ -77,16 +78,16 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             Admin admin = adminMapper.selectOne(queryWrapper);
             if (admin == null)
             {
-                return new Result<>("Email incorrect.");
+                return new Result<>("Email incorrect.", -1);
             }
             String decryptedPass = EncryptionPassUtil.doDecrypt(admin.getAdminPassword());
             if (!decryptedPass.equals(password)) {
-                return new Result<>("Password incorrect.");
+                return new Result<>("Password incorrect.", -1);
             }
 
             String accessCred = credHelper(admin);
             admin.setAdminPassword(accessCred);
-            return new Result<>(admin, "queried");
+            return new Result<>(admin, "queried", 1);
         } catch (Exception e) {
             return null;
         }
@@ -99,7 +100,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         Admin admin = adminMapper.selectOne(queryWrapper);
         if (admin != null)
         {
-            return new Result<>("Email already registered.");
+            return new Result<>("Email already registered.", -1);
         }
         try {
             String encryptedPass = EncryptionPassUtil.doEncrypt(password);
@@ -123,7 +124,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             if (!file.exists())
                 file.mkdir();
              */
-            return new Result<>(admin1, "Success.");
+            return new Result<>(admin1, "Success.", 0);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -136,11 +137,11 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         queryWrapper.eq("cred_access_key", accessKey);
         Credential credential = credentialMapper.selectOne(queryWrapper);
         if (credential == null || credential.getCredAdminId() == null)
-            return new Result<>("error: wrong credential");
+            return new Result<>("error: wrong credential", -1);
         int adminId = credential.getCredAdminId();
         QueryWrapper<Credential> queryWrapper2 = new QueryWrapper<>();
         queryWrapper2.eq("cred_admin_id", adminId);
-        return new Result<>(credentialMapper.delete(queryWrapper2), "logout");
+        return new Result<>(credentialMapper.delete(queryWrapper2), "logout", 0);
     }
 
     public Result<Admin> getInfo(Integer adminId)
@@ -153,10 +154,10 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             Admin unknown = new Admin();
             unknown.setAdminName("Runic Person");
             unknown.setAdminNote("Cannot Find This person's Info");
-            return new Result<>(unknown, "Cannot find this user's info.");
+            return new Result<>(unknown, "Cannot find this user's info.", -1);
         }
         admin.setAdminPassword("");
-        return new Result<>(admin, "queried.");
+        return new Result<>(admin, "queried.", 0);
     }
 
     public Result<Admin> getInfo(String accessKey)
@@ -166,12 +167,12 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         return getAdminHelper(queryWrapper);
     }
 
-    private Result<Admin> getAdminHelper(QueryWrapper<Credential> queryWrapper) {
+    public Result<Admin> getAdminHelper(QueryWrapper<Credential> queryWrapper) {
         Credential credential = credentialMapper.selectOne(queryWrapper);
 
         if (credential == null || credential.getCredAdminId() == null || credential.getCredIssueTime() == null)
         {
-            return new Result<>("Credential do not exist.");
+            return new Result<>("Credential do not exist.", -1);
         }
 
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -181,7 +182,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         long hours = duration.toHours();
         if (hours > credDurationHour)
         {
-            return new Result<>("Credential expired.");
+            return new Result<>("Credential expired.", -1);
         }
         QueryWrapper<Admin> queryWrapper2 = new QueryWrapper<>();
         queryWrapper2.eq("admin_id", credential.getCredAdminId());
@@ -189,7 +190,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         if (admin != null)
             admin.setAdminPassword("");
 
-        return new Result<>(admin, "queried.");
+        return new Result<>(admin, "queried.", 0);
     }
 
     public Result<Integer> editInfo(String accessKey, Admin admin)
@@ -200,7 +201,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         Admin admin1 = res1.getInfo();
         if (admin1 == null || admin1.getAdminId() == null || !admin1.getAdminId().equals(admin.getAdminId()))
         {
-            return new Result<>("Fail to locate user.");
+            return new Result<>("Fail to locate user.", -1);
         }
         UpdateWrapper<Admin> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("admin_id", admin.getAdminId());
@@ -212,14 +213,14 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             queryWrapper2.eq("admin_email", admin.getAdminEmail());
             Admin admin2 = adminMapper.selectOne(queryWrapper2);
             if (admin2 != null && !admin2.getAdminId().equals(admin1.getAdminId())) {
-                return new Result<>("Email already in use.");
+                return new Result<>("Email already in use.", -1);
             }
             updateWrapper.set("admin_email", admin.getAdminEmail());
         }
         if ( admin.getAdminNote() != null )
             updateWrapper.set("admin_note", admin.getAdminNote());
 
-        return new Result<>(adminMapper.update(admin1, updateWrapper), "updated.");
+        return new Result<>(adminMapper.update(admin1, updateWrapper), "updated.", 0);
     }
     public byte[] getAvatarHelper(String userUUID)
     {
@@ -266,7 +267,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         Admin admin1 = res1.getInfo();
         if (admin1 == null || admin1.getAdminId() == null)
         {
-            return new Result<>("Cannot locate user.");
+            return new Result<>("Cannot locate user.", -1);
         }
 
         String uuid = admin1.getAdminUuid();
@@ -277,7 +278,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         File file = new File(uploadFolder + System.getProperty("file.separator") + "userImg" + System.getProperty("file.separator") + uuid + ".jpg");
         try {
             img.transferTo(file);
-            return new Result<>("Updated.");
+            return new Result<>("Updated.", 0);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -300,15 +301,15 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             Admin admin = adminMapper.selectOne(queryWrapper);
             if (admin == null)
             {
-                return new Result<>("error: admin error.");
+                return new Result<>("admin error.", -1);
             }
             String decryptedOldPassword = EncryptionPassUtil.doDecrypt(admin.getAdminPassword());
             if (!decryptedOldPassword.equals(oldPassword))
             {
-                return new Result<>("error: incorrect old password.");
+                return new Result<>("incorrect old password.", -1);
             }
         } catch (Exception e) {
-            return new Result<>("error: encryption error.");
+            return new Result<>("encryption error.", -1);
         }
 
         try {
@@ -325,16 +326,31 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
 
     public Result<Integer> changePassword(String accessKey, String oldPassword, String newPassword)
     {
-        int retStatus;
         QueryWrapper<Credential> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("cred_access_key", accessKey);
         Result<Admin> res1 = getAdminHelper(queryWrapper);
         Admin admin1 = res1.getInfo();
         if (admin1 == null || admin1.getAdminId() == null)
         {
-            return new Result<>("Cannot locate user.");
+            return new Result<>("Cannot locate user.", -1);
         }
         int userId = admin1.getAdminId();
         return changePassword(userId, oldPassword, newPassword);
+    }
+
+    public Result<List<Admin>> getPeople(String accessKey)
+    {
+        QueryWrapper<Credential> queryWrapper2 = new QueryWrapper<>();
+        queryWrapper2.eq("cred_access_key", accessKey);
+        Result<Admin> res1 = getAdminHelper(queryWrapper2);
+        Admin admin1 = res1.getInfo();
+        if (admin1 == null || admin1.getAdminId() == null)
+        {
+            return new Result<>("incorrect or outdated credential.", -1);
+        }
+
+        QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("admin_id", "admin_name", "admin_email", "admin_note", "admin_uuid");
+        return new Result<>(adminMapper.selectList(queryWrapper), "queried.", 0);
     }
 }
