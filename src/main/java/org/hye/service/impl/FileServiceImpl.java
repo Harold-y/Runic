@@ -85,7 +85,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements IF
 
             addFile.setFId(null);
             addFile.setFName(file.getName());
-            addFile.setFPath(absPath.substring(endingPos) + ".runic");
+            addFile.setFPath(absPath.substring(endingPos).replaceAll("\\\\", "/") + ".runic");
             addFile.setFKeyId(fileEncryptDTO.getKeyId());
             addFile.setFMtnId(fileEncryptDTO.getMtnId());
             return new Result<>(fileMapper.insert(addFile), "Insert.", 0);
