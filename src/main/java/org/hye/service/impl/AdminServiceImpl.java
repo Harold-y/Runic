@@ -136,7 +136,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             admin1.setAdminPassword(accessKey);
 
             /*
-            File file = new File(uploadFolder + System.getProperty("file.separator") + uuid);
+            File file = new File(uploadFolder + "/" + uuid);
             if (!file.exists())
                 file.mkdir();
              */
@@ -240,7 +240,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     }
     public byte[] getAvatarHelper(String userUUID)
     {
-        File file = new File(uploadFolder + System.getProperty("file.separator") + "userImg" + System.getProperty("file.separator") + userUUID + ".jpg");
+        File file = new File(uploadFolder + "/" + "userImg" + "/" + userUUID + ".jpg");
         if (!file.exists())
             return new byte[]{};
         FileInputStream inputStream = null;
@@ -287,11 +287,11 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         }
 
         String uuid = admin1.getAdminUuid();
-        String folder = uploadFolder + System.getProperty("file.separator") + "userImg";
+        String folder = uploadFolder + "/" + "userImg";
         File folderDir = new File(folder);
         if (!folderDir.exists())
             folderDir.mkdir();
-        File file = new File(uploadFolder + System.getProperty("file.separator") + "userImg" + System.getProperty("file.separator") + uuid + ".jpg");
+        File file = new File(uploadFolder + "/" + "userImg" + "/" + uuid + ".jpg");
         try {
             img.transferTo(file);
             return new Result<>("Updated.", 0);
