@@ -29,6 +29,8 @@ public class AdminController {
     @Resource
     IAdminService adminService;
 
+
+
     @PostMapping("/login")
     public Result<Admin> login(String email, String password)
     {

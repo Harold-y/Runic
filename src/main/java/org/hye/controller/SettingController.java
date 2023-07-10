@@ -36,24 +36,10 @@ public class SettingController {
     IAdminService adminService;
 
 
-    private Result<Boolean> ifCredValid(HttpServletRequest request)
-    {
-        String accessKey = request.getHeader("accessKey");
-        QueryWrapper<Credential> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("cred_access_key", accessKey);
-        Result<Admin> res1 = adminService.getAdminHelper(queryWrapper);
-        Admin admin1 = res1.getInfo();
-        if (admin1 == null || admin1.getAdminId() == null)
-        {
-            return new Result<>(false, "Cannot locate user.", -1);
-        }
-        return new Result<>(true, "Success.", 0);
-    }
-
     @PostMapping("/addSetting")
     public Result<Integer> addSetting(HttpServletRequest request, String name, String value)
     {
-        if (ifCredValid(request).getInfo())
+        if (adminService.ifCredValid(request).getInfo())
             return settingService.addSetting(name, value);
         return new Result<>(-1, "credential not valid.", -1);
     }
@@ -61,7 +47,7 @@ public class SettingController {
     @PostMapping("/removeSetting")
     public Result<Integer> removeSetting(HttpServletRequest request, Integer settingId)
     {
-        if (ifCredValid(request).getInfo())
+        if (adminService.ifCredValid(request).getInfo())
             return settingService.removeSetting(settingId);
         return new Result<>(-1, "credential not valid.", -1);
     }
@@ -69,7 +55,7 @@ public class SettingController {
     @PostMapping("/editSetting")
     public Result<Integer> editSetting(HttpServletRequest request, Integer settingId, String name, String value)
     {
-        if (ifCredValid(request).getInfo())
+        if (adminService.ifCredValid(request).getInfo())
             return settingService.editSetting(settingId, name, value);
         return new Result<>(-1, "credential not valid.", -1);
     }
@@ -77,7 +63,7 @@ public class SettingController {
     @GetMapping("/getSettings")
     public Result<List<Setting>> getSettings(HttpServletRequest request)
     {
-        if (ifCredValid(request).getInfo())
+        if (adminService.ifCredValid(request).getInfo())
             return settingService.getSettings();
         return new Result<>(null, "credential not valid.", -1);
     }

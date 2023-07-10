@@ -29,5 +29,5 @@ public class Key implements Serializable {
 
     private String keyEncrypted;
 
-
+    private String keyEncryptMethod;
 }

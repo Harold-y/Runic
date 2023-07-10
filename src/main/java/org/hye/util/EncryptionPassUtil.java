@@ -39,6 +39,14 @@ public class EncryptionPassUtil {
         return decrypt(encryptedPassword, passKey);
     }
 
+    public static String doEncryptWithKey(String toEncrypt, String passKey) throws Exception {
+        return encrypt(toEncrypt.getBytes(UTF_8), passKey);
+    }
+
+    public static String doDecryptWithKey(String encryptedPassword, String passKey) throws Exception {
+        return decrypt(encryptedPassword, passKey);
+    }
+
     public static byte[] getRandomNonce(int numBytes) {
         byte[] nonce = new byte[numBytes];
         new SecureRandom().nextBytes(nonce);

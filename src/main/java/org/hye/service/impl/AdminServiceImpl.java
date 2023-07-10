@@ -4,6 +4,8 @@ import com.alibaba.fastjson2.util.UUIDUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
 import org.hye.dao.CredentialMapper;
 import org.hye.dao.SettingMapper;
 import org.hye.entity.Admin;
@@ -68,6 +70,20 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         credentialMapper.insert(credential);
 
         return accessCred;
+    }
+
+    public Result<Boolean> ifCredValid(HttpServletRequest request)
+    {
+        String accessKey = request.getHeader("accessKey");
+        QueryWrapper<Credential> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("cred_access_key", accessKey);
+        Result<Admin> res1 = getAdminHelper(queryWrapper);
+        Admin admin1 = res1.getInfo();
+        if (admin1 == null || admin1.getAdminId() == null)
+        {
+            return new Result<>(false, "Cannot locate user.", -1);
+        }
+        return new Result<>(true, "Success.", 0);
     }
 
     public Result<Admin> login(String email, String password) {
@@ -199,12 +215,12 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         queryWrapper.eq("cred_access_key", accessKey);
         Result<Admin> res1 = getAdminHelper(queryWrapper);
         Admin admin1 = res1.getInfo();
-        if (admin1 == null || admin1.getAdminId() == null || !admin1.getAdminId().equals(admin.getAdminId()))
+        if (admin1 == null || admin1.getAdminId() == null)
         {
             return new Result<>("Fail to locate user.", -1);
         }
         UpdateWrapper<Admin> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("admin_id", admin.getAdminId());
+        updateWrapper.eq("admin_id", admin1.getAdminId());
         if ( admin.getAdminName() != null && !admin.getAdminName().equals("") )
             updateWrapper.set("admin_name", admin.getAdminName());
         if ( admin.getAdminEmail() != null && !admin.getAdminEmail().equals("") )
@@ -220,7 +236,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         if ( admin.getAdminNote() != null )
             updateWrapper.set("admin_note", admin.getAdminNote());
 
-        return new Result<>(adminMapper.update(admin1, updateWrapper), "updated.", 0);
+        return new Result<>(adminMapper.update(null, updateWrapper), "updated.", 0);
     }
     public byte[] getAvatarHelper(String userUUID)
     {

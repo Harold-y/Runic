@@ -7,6 +7,7 @@ import org.hye.entity.Credential;
 import org.hye.util.Result;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -31,4 +32,5 @@ public interface IAdminService extends IService<Admin> {
     Result<Integer> changePassword(String accessKey, String oldPassword, String newPassword);
     Result<List<Admin>> getPeople(String accessKey);
     Result<Admin> getAdminHelper(QueryWrapper<Credential> queryWrapper);
+    Result<Boolean> ifCredValid(HttpServletRequest request);
 }
