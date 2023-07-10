@@ -3,6 +3,8 @@ package org.hye.test;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class TestEverything {
@@ -21,6 +23,7 @@ public class TestEverything {
 
         String mtnPath = "F:/";
         String filePath = "F:/Test/userImg/ea2d83b8-6943-4195-b563-53184537ac75.ru.md";
+        /*
         File file = new File(filePath);
         String confirmPath = filePath.split(mtnPath)[1];
         System.out.println(System.getProperty("file.separator"));
@@ -34,5 +37,18 @@ public class TestEverything {
         else
             extension = extensionLists[extensionLists.length - 1];
         System.out.println(extension);
+         */
+
+
+        int startPos = filePath.indexOf(mtnPath);
+        int endingPos = startPos + mtnPath.length();
+        System.out.println(filePath.substring(endingPos));
+
+        /*
+        Path path = Paths.get(filePath);
+        String directory = path.getParent().toString();
+        System.out.println(directory);
+
+         */
     }
 }

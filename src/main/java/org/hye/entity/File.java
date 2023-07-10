@@ -27,6 +27,8 @@ public class File implements Serializable {
 
     private String fPath;
 
+    private Integer fMtnId;
+
     private Integer fKeyId;
 
     private String fEncryptedType;

@@ -77,7 +77,7 @@ public class EncryptionFileUtil {
                 .put(cipherContent)
                 .array();
 
-        FileUtils.writeByteArrayToFile(new File(encryptedFilePath + System.getProperty("file.separator") + fileName + ".runic"), cipherTextWithIvSalt);
+        FileUtils.writeByteArrayToFile(new File(encryptedFilePath + "/" + fileName + ".runic"), cipherTextWithIvSalt);
 
         if (generatePassword) {
             byte[][] passwordEncrypted = EncryptionTextUtil.encrypt(password, constant, salt, iterationCount1);
@@ -89,7 +89,7 @@ public class EncryptionFileUtil {
             buff2.put(passwordEncrypted[0]);
             buff2.put(passwordEncrypted[1]);
 
-            FileUtils.writeByteArrayToFile(new File(encryptedFilePath + System.getProperty("file.separator") + fileName + ".runic.pass"), allByteArrayPass);
+            FileUtils.writeByteArrayToFile(new File(encryptedFilePath + "/" + fileName + ".runic.pass"), allByteArrayPass);
         }
 
     }
